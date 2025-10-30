@@ -109,12 +109,10 @@ Automated setup:
 
 - **[QUICKSTART.md](QUICKSTART.md)** - 5-minute deployment guide
 - **[INFRASTRUCTURE.md](INFRASTRUCTURE.md)** - Deployment options and network configurations
-- **[EXISTING-RESOURCES.md](EXISTING-RESOURCES.md)** - Using existing Azure resources
 - **[EXAMPLES.md](EXAMPLES.md)** - API request/response examples
 - **[AZURE_AI_AGENT_SETUP.md](AZURE_AI_AGENT_SETUP.md)** - AI Agent integration
 - **[DEPLOYMENT.md](DEPLOYMENT.md)** - Deployment script reference
 - **[SECURITY.md](SECURITY.md)** - Security best practices
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contribution guidelines
 
 ## Support
 

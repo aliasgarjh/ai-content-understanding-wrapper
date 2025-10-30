@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "functionAppName": {
+      "value": "func-aicu-wrapper-dev"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "storageAccountName": {
+      "value": "staicuwrapper"
+    },
+    "useExistingStorageAccount": {
+      "value": false
+    },
+    "storageAccountType": {
+      "value": "Standard_LRS"
+    },
+    "runtime": {
+      "value": "python"
+    },
+    "runtimeVersion": {
+      "value": "3.11"
+    },
+    "functionAppSku": {
+      "value": "FC1"
+    },
+    "useExistingAppServicePlan": {
+      "value": false
+    },
+    "existingAppServicePlanName": {
+      "value": ""
+    },
+    "useExistingApplicationInsights": {
+      "value": false
+    },
+    "existingApplicationInsightsName": {
+      "value": ""
+    },
+    "enableVNetIntegration": {
+      "value": false
+    },
+    "useExistingVNet": {
+      "value": false
+    },
+    "vnetName": {
+      "value": ""
+    },
+    "vnetAddressPrefix": {
+      "value": "10.0.0.0/16"
+    },
+    "functionSubnetAddressPrefix": {
+      "value": "10.0.1.0/24"
+    },
+    "privateEndpointSubnetAddressPrefix": {
+      "value": "10.0.2.0/24"
+    },
+    "enableStoragePrivateEndpoint": {
+      "value": false
+    },
+    "contentUnderstandingBaseUrl": {
+      "value": ""
+    },
+    "defaultAnalyzerId": {
+      "value": ""
+    },
+    "enableApplicationInsights": {
+      "value": true
+    }
+  }
+}

@@ -1,0 +1,166 @@
+    {
+    "openapi": "3.0.1",
+    "info": {
+        "title": "AI Content Understanding Wrapper Function",
+        "version": "1.0.0",
+        "description": "Enhanced wrapper for Azure AI Content Understanding analyzer operations. Automatically polls analyzer operations to completion with exponential backoff and returns enriched results with correlation IDs."
+    },
+    "servers": [
+        {
+        "url": "https://your-function-app-name.azurewebsites.net/api",
+        "description": "Replace with your deployed Azure Function App URL"
+        }
+    ],
+    "security": [
+        {
+        "AzureAD": []
+        },
+        {
+        "ApiKeyAuth": []
+        }
+    ],
+    "paths": {
+        "/ai_content_understanding": {
+        "post": {
+            "operationId": "SubmitAnalyzeJob",
+            "summary": "Submit content for analysis with automatic polling",
+            "description": "Submits a document (via URL or base64 data) to an analyzer and automatically polls until completion using exponential backoff with jitter.",
+            "parameters": [
+            {
+                "name": "baseUrl",
+                "in": "query",
+                "description": "Base endpoint of Azure AI Content Understanding resource. Optional if CONTENT_UNDERSTANDING_BASE_URL environment variable is set.",
+                "required": false,
+                "schema": {"type": "string"}
+            },
+            {"name": "api-version", "in": "query", "description": "Override upstream API version.", "schema": {"type": "string", "default": "2025-05-01-preview"}},
+            {"name": "maxWaitSeconds", "in": "query", "description": "Max cumulative polling wait in seconds.", "schema": {"type": "integer", "default": 600}},
+            {"name": "maxRetries", "in": "query", "description": "Max polling attempts.", "schema": {"type": "integer", "default": 10}}
+            ],
+            "requestBody": {
+            "required": true,
+            "content": {
+                "application/json": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                    "analyzerId": { "type": "string", "description": "Analyzer identifier. Optional if DEFAULT_ANALYZER_ID environment variable is set (defaults to prebuilt-invoice)." },
+                    "url": { "type": "string", "format": "uri", "description": "URL of document to analyze." },
+                    "data": { "type": "string", "format": "byte", "description": "Base64 encoded document contents." },
+                        "baseUrl": { "type": "string", "description": "Base endpoint URL. Optional if provided as query parameter or CONTENT_UNDERSTANDING_BASE_URL is set." },
+                    "maxWaitSeconds": { "type": "integer" },
+                    "maxRetries": { "type": "integer" },
+                    "retryAfterSeconds": { "type": "integer", "description": "Retry-After used when still running (default 30)." }
+                    },
+                    "oneOf": [
+                    {"required": ["url"]},
+                    {"required": ["data"]}
+                    ]
+                }
+                }
+            }
+            },
+            "responses": {
+            "200": {
+                "description": "Enriched result with final analyzer output after polling to completion.",
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/EnrichedResult"}}}
+            },
+            "400": {"description": "Validation error."},
+            "502": {"description": "Upstream network error."}
+            }
+        },
+
+        "get": {
+            "operationId": "GetAnalyzeStatus",
+            "summary": "Get status for existing analyze job with automatic polling",
+            "description": "Fetches result for an existing operation by resultId or full operationLocation. Automatically polls with exponential backoff and jitter until completion.",
+            "parameters": [
+            {"name": "resultId", "in": "query", "schema": {"type": "string"}, "description": "Result ID from earlier submission."},
+            {"name": "operationLocation", "in": "query", "schema": {"type": "string"}, "description": "Full upstream operation URL (overrides resultId)."},
+            {"name": "api-version", "in": "query", "schema": {"type": "string", "default": "2025-05-01-preview"}, "description": "Override API version."},
+            {"name": "baseUrl", "in": "query", "schema": {"type": "string"}, "required": false, "description": "Base endpoint URL. Optional if CONTENT_UNDERSTANDING_BASE_URL environment variable is set. Required when using resultId to construct operation location."},
+            {"name": "maxWaitSeconds", "in": "query", "schema": {"type": "integer", "default": 600}, "description": "Max cumulative polling wait."},
+            {"name": "maxRetries", "in": "query", "schema": {"type": "integer", "default": 10}, "description": "Max polling attempts."},
+            {"name": "retryAfterSeconds", "in": "query", "schema": {"type": "integer", "default": 30}, "description": "Retry-After header value when still running."}
+            ],
+            "responses": {
+            "200": {
+                "description": "Enriched final result after polling to completion.",
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/StatusResult"}}}
+            },
+            "400": {"description": "Validation error."},
+            "502": {"description": "Upstream network error."}
+            }
+        }
+        }
+        ,"/whoami": {
+        "get": {
+            "operationId": "WhoAmI",
+            "summary": "Diagnostic: Return injected auth headers",
+            "description": "Returns correlationId plus any Easy Auth injected principal headers to aid troubleshooting authentication/401 issues.",
+            "responses": {
+            "200": {
+                "description": "Authentication diagnostic payload",
+                "content": {
+                "application/json": {
+                    "schema": {
+                    "type": "object",
+                    "properties": {
+                        "correlationId": {"type": "string"},
+                        "authorizationHeaderPresent": {"type": "boolean"},
+                        "principalHeaders": {"type": "object"},
+                        "note": {"type": "string"}
+                    }
+                    }
+                }
+                }
+            }
+            }
+        }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+                "AzureAD": {
+                        "type": "oauth2",
+                        "description": "Azure AD (Entra ID) client credentials / managed identity flow. Replace YOUR_TENANT_DOMAIN with your tenant (e.g., contoso.onmicrosoft.com) and update the scope to match your App Registration's Application ID URI.",
+                        "flows": {
+                            "clientCredentials": {
+                                "tokenUrl": "https://login.microsoftonline.com/YOUR_TENANT_ID/oauth2/v2.0/token",
+                                "scopes": {
+                                    "https://YOUR_TENANT_DOMAIN/aicu-wrapper-api/.default": "Access the AI Content Understanding wrapper function"
+                                }
+                            }
+                        }
+                },
+                "ApiKeyAuth": {
+                        "type": "apiKey",
+                        "in": "query",
+                        "name": "code",
+                        "description": "Azure Function key authentication. Provide the function key or host key as the 'code' query parameter."
+                }
+        },
+        "schemas": {
+        "EnrichedResult": {
+            "type": "object",
+            "properties": {
+            "correlationId": {"type": "string"},
+            "analyzerId": {"type": "string"},
+            "submissionStatusCode": {"type": "integer"},
+            "operationLocation": {"type": "string"},
+            "finalStatusCode": {"type": "integer"},
+            "result": {"type": "object", "description": "Analyzer result or timeout/error payload."}
+            }
+        },
+        "StatusResult": {
+            "type": "object",
+            "properties": {
+            "correlationId": {"type": "string"},
+            "operationLocation": {"type": "string"},
+            "statusCode": {"type": "integer"},
+            "body": {"type": "object"}
+            }
+        }
+        }
+    }
+    }

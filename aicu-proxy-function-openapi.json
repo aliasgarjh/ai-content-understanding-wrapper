@@ -135,9 +135,9 @@
                 },
                 "ApiKeyAuth": {
                         "type": "apiKey",
-                        "in": "query",
-                        "name": "code",
-                        "description": "Azure Function key authentication. Provide the function key or host key as the 'code' query parameter."
+                        "in": "header",
+                        "name": "x-functions-key",
+                        "description": "Azure Function key authentication. Provide the function key or host key in the 'x-functions-key' header."
                 }
         },
         "schemas": {
